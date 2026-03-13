@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOFES AI v2 · Sign Up</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --deep: #03020a;
+    --nebula-1: rgba(88, 28, 180, 0.18);
+    --nebula-2: rgba(15, 52, 130, 0.22);
+    --nebula-3: rgba(120, 10, 100, 0.12);
+    --glass-bg: rgba(12, 8, 28, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.09);
+    --input-bg: rgba(255, 255, 255, 0.04);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+    --text-muted: rgba(255,255,255,0.38);
+    --accent: #a78bfa;
+  }
+
+  html { height: 100%; }
+
+  body {
+    min-height: 100%;
+    background: var(--deep);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    overflow-x: hidden;
+  }
+
+  #cosmos {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+
+  .nebula {
+    position: fixed; border-radius: 50%;
+    filter: blur(90px); pointer-events: none; z-index: 1;
+    animation: nebula-drift 22s ease-in-out infinite alternate;
+  }
+  .n1 { width:600px; height:500px; background:var(--nebula-1); top:-10%; left:-5%; animation-duration:26s; }
+  .n2 { width:700px; height:600px; background:var(--nebula-2); bottom:-15%; right:-8%; animation-duration:32s; animation-direction:alternate-reverse; }
+  .n3 { width:400px; height:350px; background:var(--nebula-3); top:30%; left:55%; animation-duration:18s; }
+
+  @keyframes nebula-drift {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(30px,-20px) scale(1.06); }
+    100% { transform: translate(-15px,25px) scale(0.96); }
+  }
+
+  .card {
+    position: relative; z-index: 10;
+    width: 100%; max-width: 440px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 44px 40px 40px;
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset, 0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(100,50,200,0.1);
+    animation: card-in 0.9s cubic-bezier(.22,1,.36,1) both;
+  }
+
+  @keyframes card-in {
+    from { opacity:0; transform:translateY(32px) scale(0.97); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  .card::before {
+    content:''; position:absolute; top:0; left:20%; right:20%; height:1px;
+    background: linear-gradient(90deg,transparent,rgba(180,140,255,0.5),transparent);
+  }
+
+  .card-header { text-align:center; margin-bottom:32px; }
+
+  .logo-badge {
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:0.62rem; font-weight:500; letter-spacing:0.28em;
+    text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;
+  }
+
+  .logo-dot {
+    width:5px; height:5px; border-radius:50%;
+    background:var(--accent); box-shadow:0 0 8px var(--accent);
+    animation: pulse-dot 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.5; transform:scale(0.7); }
+  }
+
+  .card-title {
+    font-family:'Syne',sans-serif; font-weight:800;
+    font-size: clamp(1.5rem,5vw,2rem); letter-spacing:-0.01em; line-height:1.1;
+    background:linear-gradient(135deg,#ffffff 30%,#c4a8ff 70%,#8b6fef 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+
+  .card-sub { margin-top:8px; font-size:0.82rem; color:var(--text-muted); }
+
+  .form { display:flex; flex-direction:column; gap:14px; }
+
+  .field { display:flex; flex-direction:column; gap:6px; animation:fade-up 0.6s both; }
+  .field:nth-child(1){animation-delay:0.15s}
+  .field:nth-child(2){animation-delay:0.22s}
+  .field:nth-child(3){animation-delay:0.29s}
+  .field:nth-child(4){animation-delay:0.36s}
+
+  @keyframes fade-up {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .field label {
+    font-size:0.72rem; font-weight:500; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--text-muted); padding-left:2px;
+    transition:color 0.2s;
+  }
+  .field:focus-within label { color:var(--accent); }
+
+  .input-wrap { position:relative; display:flex; align-items:center; }
+
+  .input-icon {
+    position:absolute; left:14px; color:rgba(255,255,255,0.28);
+    pointer-events:none; transition:color 0.25s; display:flex; align-items:center;
+  }
+  .field:focus-within .input-icon { color:var(--accent); }
+
+  input {
+    width:100%; padding:13px 42px; background:var(--input-bg);
+    border:1px solid var(--input-border); border-radius:10px;
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.9rem;
+    outline:none; -webkit-appearance:none;
+    transition:border-color 0.25s,background 0.25s,box-shadow 0.25s;
+  }
+  input::placeholder { color:rgba(255,255,255,0.2); }
+  input:focus {
+    border-color:rgba(150,100,255,0.6);
+    background:rgba(140,80,255,0.06);
+    box-shadow:0 0 0 3px rgba(140,80,255,0.12),0 0 20px rgba(140,80,255,0.1);
+  }
+  input.error {
+    border-color:rgba(255,100,120,0.6);
+    box-shadow:0 0 0 3px rgba(255,80,100,0.1);
+  }
+
+  .pw-toggle {
+    position:absolute; right:14px; background:none; border:none; cursor:pointer;
+    color:rgba(255,255,255,0.25); padding:0; display:flex; align-items:center;
+    transition:color 0.2s;
+  }
+  .pw-toggle:hover { color:rgba(255,255,255,0.6); }
+
+  .err-msg {
+    font-size:0.72rem; color:rgba(255,120,140,0.9);
+    padding-left:4px; min-height:14px;
+  }
+
+  .strength-wrap { display:flex; gap:5px; margin-top:2px; }
+  .strength-bar {
+    flex:1; height:3px; border-radius:2px;
+    background:rgba(255,255,255,0.07); transition:background 0.3s;
+  }
+  .strength-bar.weak   { background:rgba(255,80,100,0.7); }
+  .strength-bar.medium { background:rgba(255,180,60,0.7); }
+  .strength-bar.strong { background:rgba(100,220,120,0.7); }
+
+  .btn-submit {
+    margin-top:8px; width:100%; padding:15px; border-radius:10px;
+    border:none; background:#ffffff; color:#0a0a14;
+    font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500;
+    letter-spacing:0.1em; text-transform:uppercase; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    transition:transform 0.22s cubic-bezier(.34,1.56,.64,1),box-shadow 0.22s;
+    position:relative; overflow:hidden;
+    animation:fade-up 0.6s 0.45s both;
+  }
+  .btn-submit::after {
+    content:''; position:absolute; inset:0; border-radius:inherit; opacity:0;
+    transition:opacity 0.3s;
+    background:radial-gradient(circle at center,rgba(255,255,255,0.2) 0%,transparent 70%);
+  }
+  .btn-submit:hover::after { opacity:1; }
+  .btn-submit:hover {
+    transform:translateY(-2px) scale(1.02);
+    box-shadow:0 0 30px rgba(255,255,255,0.45),0 8px 24px rgba(0,0,0,0.5);
+  }
+  .btn-submit:active { transform:scale(0.98); }
+  .btn-submit.loading { pointer-events:none; opacity:0.8; }
+
+  .spinner {
+    display:none; width:16px; height:16px;
+    border:2px solid rgba(0,0,0,0.2); border-top-color:#0a0a14;
+    border-radius:50%; animation:spin 0.7s linear infinite;
+  }
+  .btn-submit.loading .spinner { display:block; }
+  .btn-submit.loading .btn-label { opacity:0.6; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .card-footer {
+    text-align:center; margin-top:24px;
+    font-size:0.82rem; color:var(--text-muted);
+    animation:fade-up 0.6s 0.5s both;
+  }
+  .card-footer a {
+    color:var(--accent); text-decoration:none; font-weight:500; transition:color 0.2s,text-shadow 0.2s;
+  }
+  .card-footer a:hover { color:#fff; text-shadow:0 0 12px rgba(160,120,255,0.6); }
+
+  .divider {
+    display:flex; align-items:center; gap:12px; margin:4px 0;
+    color:var(--text-muted); font-size:0.72rem; letter-spacing:0.08em;
+    animation:fade-up 0.6s 0.47s both;
+  }
+  .divider::before,.divider::after {
+    content:''; flex:1; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);
+  }
+
+  .success-overlay {
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; text-align:center; padding:20px 0;
+  }
+  .success-icon {
+    width:60px; height:60px; border-radius:50%;
+    border:2px solid rgba(100,220,120,0.6);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 30px rgba(80,200,100,0.25);
+    animation:pop-in 0.5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes pop-in {
+    from { transform:scale(0); opacity:0; }
+    to   { transform:scale(1); opacity:1; }
+  }
+  .success-title {
+    font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:700; color:var(--text);
+  }
+  .success-sub { font-size:0.85rem; color:var(--text-muted); }
+
+  @media (max-width:480px) {
+    .card { padding:36px 24px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="cosmos"></canvas>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="nebula n3"></div>
+
+<div class="card">
+
+  <div class="card-header">
+    <div class="logo-badge">
+      <span class="logo-dot"></span>
+      WOFES AI &nbsp;·&nbsp; v2
+    </div>
+    <h1 class="card-title">Create Account</h1>
+    <p class="card-sub">Join the cosmic frontier of AI</p>
+  </div>
+
+  <form class="form" id="signupForm" novalidate autocomplete="off">
+
+    <div class="field">
+      <label for="username">Username</label>
+      <div class="input-wrap">
+        <span class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </span>
+        <input type="text" id="username" placeholder="your_username" autocomplete="off" spellcheck="false">
+      </div>
+      <span class="err-msg" id="err-username"></span>
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <div class="input-wrap">
+        <span class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/>
+          </svg>
+        </span>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="off">
+      </div>
+      <span class="err-msg" id="err-email"></span>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <span class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </span>
+        <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password">
+        <button type="button" class="pw-toggle" data-target="password" aria-label="Toggle password visibility">
+          <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg class="eye-closed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <div class="strength-wrap">
+        <div class="strength-bar" id="sb1"></div>
+        <div class="strength-bar" id="sb2"></div>
+        <div class="strength-bar" id="sb3"></div>
+        <div class="strength-bar" id="sb4"></div>
+      </div>
+      <span class="err-msg" id="err-password"></span>
+    </div>
+
+    <div class="field">
+      <label for="confirm">Confirm Password</label>
+      <div class="input-wrap">
+        <span class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </span>
+        <input type="password" id="confirm" placeholder="Repeat your password" autocomplete="new-password">
+        <button type="button" class="pw-toggle" data-target="confirm" aria-label="Toggle confirm password visibility">
+          <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg class="eye-closed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <span class="err-msg" id="err-confirm"></span>
+    </div>
+
+    <button type="submit" class="btn-submit" id="submitBtn">
+      <div class="spinner"></div>
+      <span class="btn-label">
+        Create Account &nbsp;
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="display:inline-block;vertical-align:middle">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="#0a0a14" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </button>
+
+  </form>
+
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(100,220,120,0.9)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="success-title">You're In</div>
+    <div class="success-sub">Account created. Welcome to WOFES AI.</div>
+  </div>
+
+  <div class="divider">or</div>
+
+  <div class="card-footer">
+    Already have an account? <a href="login.html">Sign in</a>
+  </div>
+
+</div>
+
+<script>
+// Star field (такой же как в login)
+const canvas = document.getElementById('cosmos');
+const ctx = canvas.getContext('2d');
+let W, H, stars = [], shooters = [];
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+function rand(a,b) { return a + Math.random()*(b-a); }
+
+function mkStar() {
+  return {
+    x: Math.random()*W, y: Math.random()*H,
+    r: rand(0.3,1.6), baseAlpha: rand(0.2,0.9), alpha:0,
+    twinkleSpeed: rand(0.004,0.018), twinklePhase: Math.random()*Math.PI*2,
+    driftX: rand(-0.012,0.012), driftY: rand(-0.006,0.006),
+    hue: Math.random()<0.15?260:(Math.random()<0.1?200:0),
+    sat: Math.random()<0.2?80:0,
+  };
+}
+
+function initStars() { stars = Array.from({length:260}, mkStar); }
+
+function mkShooter() {
+  const angle = rand(15,45)*Math.PI/180;
+  return {
+    x: rand(0,W*0.8), y: rand(0,H*0.35), len: rand(80,200),
+    speed: rand(6,14), angle, life:1, decay: rand(0.012,0.025), active:true
+  };
+}
+
+let shooterTimer = 0;
+function maybeShoot(dt) {
+  shooterTimer += dt;
+  if(shooterTimer>rand(2800,5500)){shooters.push(mkShooter());shooterTimer=0;}
+  shooters = shooters.filter(s=>s.active);
+}
+
+let last = 0;
+function draw(ts) {
+  const dt = ts - last; last = ts;
+  ctx.clearRect(0,0,W,H);
+  const bg = ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,Math.max(W,H)*.75);
+  bg.addColorStop(0,'#0b0620'); bg.addColorStop(0.5,'#060412'); bg.addColorStop(1,'#03020a');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  for (const s of stars) {
+    s.twinklePhase += s.twinkleSpeed;
+    s.alpha = s.baseAlpha*(0.5+0.5*Math.sin(s.twinklePhase));
+    s.x += s.driftX; s.y += s.driftY;
+    if(s.x<-2)s.x=W+2; if(s.x>W+2)s.x=-2; if(s.y<-2)s.y=H+2; if(s.y>H+2)s.y=-2;
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle = s.sat>0?`hsla(${s.hue},${s.sat}%,85%,${s.alpha})`:`rgba(255,255,255,${s.alpha})`;
+    ctx.fill();
+    if(s.r>1.1){
+      const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+      g.addColorStop(0,`rgba(200,180,255,${s.alpha*0.3})`); g.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r*5,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+    }
+  }
+
+  maybeShoot(dt);
+  for (const s of shooters) {
+    const ex = s.x+Math.cos(s.angle)*s.len*s.life, ey = s.y+Math.sin(s.angle)*s.len*s.life;
+    const g = ctx.createLinearGradient(s.x,s.y,ex,ey);
+    g.addColorStop(0,'rgba(255,255,255,0)'); g.addColorStop(0.7,`rgba(255,255,255,${s.life*0.5})`); g.addColorStop(1,`rgba(255,255,255,${s.life})`);
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(ex,ey);
+    ctx.strokeStyle=g; ctx.lineWidth=1.5; ctx.stroke();
+    s.x+=Math.cos(s.angle)*s.speed; s.y+=Math.sin(s.angle)*s.speed;
+    s.life-=s.decay; if(s.life<=0)s.active=false;
+  }
+  requestAnimationFrame(draw);
+}
+
+resize(); initStars();
+window.addEventListener('resize',()=>{resize();initStars();});
+requestAnimationFrame(draw);
+
+// Password toggle
+document.querySelectorAll('.pw-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const inp = document.getElementById(btn.dataset.target);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.querySelector('.eye-open').style.display  = show ? 'none' : '';
+    btn.querySelector('.eye-closed').style.display = show ? '' : 'none';
+  });
+});
+
+// Password strength
+const bars = ['sb1','sb2','sb3','sb4'].map(id=>document.getElementById(id));
+function scorePassword(p) {
+  let s = 0;
+  if(p.length>=8)s++; if(p.length>=12)s++; if(/[A-Z]/.test(p)&&/[a-z]/.test(p))s++;
+  if(/[0-9]/.test(p))s++; if(/[^A-Za-z0-9]/.test(p))s++;
+  return Math.min(4,s);
+}
+document.getElementById('password').addEventListener('input', function() {
+  const score = this.value.length ? scorePassword(this.value) : 0;
+  const cls = score<=1?'weak':score<=2?'medium':'strong';
+  bars.forEach((b,i)=>{ b.className='strength-bar'; if(i<score)b.classList.add(cls); });
+});
+
+// Validation
+function setErr(id, msg) {
+  document.getElementById('err-'+id).textContent = msg;
+  const inp = document.getElementById(id);
+  msg ? inp.classList.add('error') : inp.classList.remove('error');
+  return !!msg;
+}
+
+const rules = {
+  username: v => !v?'Username is required.':v.length<3?'Min. 3 characters.':!/^[a-zA-Z0-9_]+$/.test(v)?'Letters, numbers & _ only.':'',
+  email:    v => !v?'Email is required.':/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)?'':'Invalid email address.',
+  password: v => !v?'Password is required.':v.length<8?'Min. 8 characters.':'',
+  confirm:  (v,pw) => !v?'Please confirm password.':v!==pw?'Passwords do not match.':'',
+};
+
+['username','email','password'].forEach(id => {
+  document.getElementById(id).addEventListener('blur', function() { setErr(id, rules[id](this.value.trim())); });
+});
+document.getElementById('confirm').addEventListener('blur', function() {
+  setErr('confirm', rules.confirm(this.value, document.getElementById('password').value));
+});
+
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const u  = document.getElementById('username').value.trim();
+  const em = document.getElementById('email').value.trim();
+  const pw = document.getElementById('password').value;
+  const co = document.getElementById('confirm').value;
+  const errs = [setErr('username',rules.username(u)), setErr('email',rules.email(em)), setErr('password',rules.password(pw)), setErr('confirm',rules.confirm(co,pw))];
+  if(errs.some(Boolean)) return;
+
+  // Проверка, есть ли уже такой пользователь
+  const users = JSON.parse(localStorage.getItem('wofes_users') || '[]');
+  if (users.find(user => user.name === u)) {
+    setErr('username', 'Username already exists');
+    return;
+  }
+
+  // Сохраняем нового пользователя
+  users.push({ name: u, email: em, password: pw });
+  localStorage.setItem('wofes_users', JSON.stringify(users));
+
+  const btn = document.getElementById('submitBtn');
+  btn.classList.add('loading');
+
+  // Показываем успех и перенаправляем на вход
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    document.getElementById('signupForm').style.display = 'none';
+    const ov = document.getElementById('successOverlay');
+    ov.style.display = 'flex';
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 2000);
+  }, 1800);
+});
+</script>
+</body>
+</html>

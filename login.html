@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOFES AI v2 — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --deep:        #03020a;
+    --void:        #060412;
+    --nebula-1:    rgba(88, 28, 180, 0.18);
+    --nebula-2:    rgba(15, 52, 130, 0.22);
+    --nebula-3:    rgba(120, 10, 100, 0.12);
+    --white:       #ffffff;
+    --white-dim:   rgba(255,255,255,0.55);
+    --white-faint: rgba(255,255,255,0.08);
+    --purple:      rgba(140, 80, 255, 0.7);
+    --purple-glow: rgba(140, 80, 255, 0.35);
+    --card-bg:     rgba(12, 8, 28, 0.55);
+    --card-border: rgba(255,255,255,0.1);
+    --input-bg:    rgba(255,255,255,0.05);
+    --input-border:rgba(255,255,255,0.12);
+    --focus-glow:  rgba(140, 80, 255, 0.45);
+  }
+
+  html, body {
+    width: 100%; min-height: 100%;
+    background: var(--deep);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  #cosmos {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .nebula {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 1;
+    animation: nebula-drift 22s ease-in-out infinite alternate;
+  }
+  .n1 { width: 600px; height: 500px; background: var(--nebula-1); top: -10%; left: -5%; animation-duration: 26s; }
+  .n2 { width: 700px; height: 600px; background: var(--nebula-2); bottom: -15%; right: -8%; animation-duration: 32s; animation-direction: alternate-reverse; }
+  .n3 { width: 400px; height: 350px; background: var(--nebula-3); top: 30%; left: 50%; transform: translateX(-50%); animation-duration: 18s; }
+  @keyframes nebula-drift {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(30px,-20px) scale(1.06); }
+    100% { transform: translate(-15px,25px) scale(0.96); }
+  }
+
+  #stage {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  .halo {
+    position: absolute;
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(ellipse, rgba(110,50,220,0.18) 0%, transparent 70%);
+    filter: blur(50px);
+    pointer-events: none;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    animation: halo-pulse 6s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+  @keyframes halo-pulse {
+    from { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+    to   { opacity: 1;   transform: translate(-50%,-50%) scale(1.15); }
+  }
+
+  .card {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 420px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 44px 40px 40px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.04) inset,
+      0 32px 80px rgba(0,0,0,0.6),
+      0 0 60px rgba(100,50,220,0.12);
+    animation: card-in 0.9s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(36px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%; right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(180,140,255,0.5), transparent);
+    border-radius: 1px;
+  }
+
+  .card-badge {
+    text-align: center;
+    letter-spacing: 0.28em;
+    font-size: 0.62rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.32);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    animation: fade-up 0.8s 0.3s both;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.5rem, 5vw, 1.95rem);
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #ffffff 30%, #c4a8ff 70%, #8b6fef 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 32px;
+    text-shadow: none;
+    animation: fade-up 0.8s 0.4s both;
+  }
+
+  .form { animation: fade-up 0.8s 0.5s both; }
+
+  .field {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .field-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: rgba(255,255,255,0.3);
+    pointer-events: none;
+    transition: color 0.25s;
+  }
+
+  .field input {
+    width: 100%;
+    height: 50px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 10px;
+    padding: 0 16px 0 44px;
+    color: rgba(255,255,255,0.9);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    -webkit-text-fill-color: rgba(255,255,255,0.9);
+  }
+
+  .field input::placeholder {
+    color: rgba(255,255,255,0.25);
+    -webkit-text-fill-color: rgba(255,255,255,0.25);
+  }
+
+  .field input:-webkit-autofill,
+  .field input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 100px #0e0924 inset;
+    -webkit-text-fill-color: rgba(255,255,255,0.9) !important;
+    caret-color: white;
+    border-color: rgba(140,80,255,0.4);
+  }
+
+  .field input:focus {
+    border-color: rgba(140,80,255,0.6);
+    background: rgba(140,80,255,0.06);
+    box-shadow: 0 0 0 3px rgba(140,80,255,0.15), 0 0 20px rgba(140,80,255,0.12);
+  }
+
+  .field:focus-within .field-icon {
+    color: rgba(180,140,255,0.8);
+  }
+
+  .toggle-pass {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.28);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+  }
+  .toggle-pass:hover { color: rgba(255,255,255,0.65); }
+  .field input.has-toggle { padding-right: 42px; }
+
+  .forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -6px;
+    margin-bottom: 24px;
+  }
+  .forgot-link {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.3);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: color 0.2s;
+  }
+  .forgot-link:hover { color: rgba(180,140,255,0.8); }
+
+  .btn-signin {
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    background: #ffffff;
+    color: #0a0a14;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s ease;
+    margin-bottom: 24px;
+  }
+  .btn-signin::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.25) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn-signin:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 30px rgba(255,255,255,0.45), 0 10px 28px rgba(0,0,0,0.4);
+  }
+  .btn-signin:hover::after { opacity: 1; }
+  .btn-signin:active { transform: scale(0.98); }
+
+  .btn-signin .arrow-icon { display: inline-flex; transition: transform 0.2s; }
+  .btn-signin:hover .arrow-icon { transform: translateX(3px); }
+
+  .btn-signin.loading { pointer-events: none; opacity: 0.75; }
+  .btn-signin.loading .btn-text { opacity: 0; }
+  .btn-signin .spinner {
+    position: absolute;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(10,10,20,0.2);
+    border-top-color: #0a0a14;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .btn-signin.loading .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .divider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+  .divider-text {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .signup-row {
+    text-align: center;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.01em;
+  }
+  .signup-row a {
+    color: rgba(180,140,255,0.85);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .signup-row a:hover { color: #c4a8ff; }
+
+  .error-msg {
+    background: rgba(255, 70, 70, 0.1);
+    border: 1px solid rgba(255, 70, 70, 0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: rgba(255, 160, 160, 0.9);
+    margin-bottom: 16px;
+    display: none;
+    animation: fade-up 0.3s both;
+  }
+  .error-msg.show { display: block; }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .page-footer {
+    position: relative;
+    z-index: 2;
+    margin-top: 28px;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.15);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    animation: fade-up 0.8s 0.9s both;
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 36px 24px 32px; border-radius: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="cosmos"></canvas>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="nebula n3"></div>
+
+<div id="stage">
+  <div class="halo"></div>
+
+  <div class="card">
+
+    <p class="card-badge">WOFES AI &nbsp;·&nbsp; v2</p>
+    <h1 class="card-title">SIGN IN TO<br>WOFES AI</h1>
+
+    <div class="form">
+      <div class="error-msg" id="errorMsg">Incorrect username or password. Please try again.</div>
+
+      <!-- Username -->
+      <div class="field">
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+        <input type="text" id="username" placeholder="Username" autocomplete="username" spellcheck="false">
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <input type="password" id="password" class="has-toggle" placeholder="Password" autocomplete="current-password">
+        <button class="toggle-pass" onclick="togglePass()" aria-label="Show/hide password" tabindex="-1">
+          <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Forgot -->
+      <div class="forgot-row">
+        <a href="#" class="forgot-link" onclick="handleForgot(event)">Forgot password?</a>
+      </div>
+
+      <!-- Sign In -->
+      <button class="btn-signin" id="signinBtn" onclick="handleSignIn()">
+        <span class="spinner"></span>
+        <span class="btn-text">
+          SIGN IN
+          <span class="arrow-icon" style="margin-left:6px">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#0a0a14" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </span>
+      </button>
+
+      <!-- Divider -->
+      <div class="divider-row">
+        <div class="divider-line"></div>
+        <span class="divider-text">or</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- Sign up -->
+      <p class="signup-row">
+        Don't have an account? <a href="register.html" onclick="handleSignUp(event)">Sign up</a>
+      </p>
+    </div>
+  </div>
+
+  <p class="page-footer">© 2025 WOFES AI &nbsp;·&nbsp; All rights reserved</p>
+</div>
+
+<script>
+// Star field
+const canvas = document.getElementById('cosmos');
+const ctx = canvas.getContext('2d');
+let W, H, stars = [], shooters = [];
+const STAR_COUNT = 280;
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+function rand(a,b) { return a + Math.random()*(b-a); }
+
+function mkStar() {
+  return {
+    x: Math.random()*W, y: Math.random()*H,
+    r: rand(0.3,1.6), baseAlpha: rand(0.2,0.9), alpha:0,
+    twinkleSpeed: rand(0.004,0.018), twinklePhase: Math.random()*Math.PI*2,
+    driftX: rand(-0.012,0.012), driftY: rand(-0.006,0.006),
+    hue: Math.random()<0.15?260:(Math.random()<0.1?200:0),
+    sat: Math.random()<0.2?80:0,
+  };
+}
+function initStars() { stars = Array.from({length:STAR_COUNT}, mkStar); }
+
+function mkShooter() {
+  const angle = rand(15,45)*Math.PI/180;
+  return {
+    x: rand(0,W*0.8), y: rand(0,H*0.4),
+    len: rand(80,200), speed: rand(6,14), angle, life:1,
+    decay: rand(0.012,0.025), active:true,
+  };
+}
+
+let shooterTimer = 0;
+function maybeShoot(dt) {
+  shooterTimer += dt;
+  if (shooterTimer > rand(2500,5500)) { shooters.push(mkShooter()); shooterTimer = 0; }
+  shooters = shooters.filter(s => s.active);
+}
+
+let last = 0;
+function draw(ts) {
+  const dt = ts - last; last = ts;
+  ctx.clearRect(0,0,W,H);
+
+  const bg = ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,Math.max(W,H)*.75);
+  bg.addColorStop(0,'#0b0620'); bg.addColorStop(.5,'#060412'); bg.addColorStop(1,'#03020a');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  for (const s of stars) {
+    s.twinklePhase += s.twinkleSpeed;
+    s.alpha = s.baseAlpha*(0.5 + 0.5*Math.sin(s.twinklePhase));
+    s.x += s.driftX; s.y += s.driftY;
+    if (s.x<-2) s.x=W+2; if (s.x>W+2) s.x=-2; if (s.y<-2) s.y=H+2; if (s.y>H+2) s.y=-2;
+
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle = s.sat>0 ? `hsla(${s.hue},${s.sat}%,85%,${s.alpha})` : `rgba(255,255,255,${s.alpha})`;
+    ctx.fill();
+
+    if (s.r>1.1) {
+      const grd = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+      grd.addColorStop(0,`rgba(200,180,255,${s.alpha*.3})`); grd.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r*5,0,Math.PI*2); ctx.fillStyle=grd; ctx.fill();
+    }
+  }
+
+  maybeShoot(dt);
+  for (const s of shooters) {
+    const ex = s.x + Math.cos(s.angle)*s.len*s.life;
+    const ey = s.y + Math.sin(s.angle)*s.len*s.life;
+    const grad = ctx.createLinearGradient(s.x,s.y,ex,ey);
+    grad.addColorStop(0,`rgba(255,255,255,0)`);
+    grad.addColorStop(.7,`rgba(255,255,255,${s.life*.6})`);
+    grad.addColorStop(1,`rgba(255,255,255,${s.life})`);
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(ex,ey);
+    ctx.strokeStyle=grad; ctx.lineWidth=1.5; ctx.stroke();
+    s.x += Math.cos(s.angle)*s.speed; s.y += Math.sin(s.angle)*s.speed;
+    s.life -= s.decay; if(s.life<=0) s.active=false;
+  }
+
+  requestAnimationFrame(draw);
+}
+
+resize(); initStars();
+window.addEventListener('resize', () => { resize(); initStars(); });
+requestAnimationFrame(draw);
+
+// Form logic
+function togglePass() {
+  const inp  = document.getElementById('password');
+  const icon = document.getElementById('eyeIcon');
+  const show = inp.type === 'password';
+  inp.type   = show ? 'text' : 'password';
+  icon.innerHTML = show
+    ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`
+    : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+  // Shake card
+  const card = document.querySelector('.card');
+  card.style.animation = 'none';
+  card.style.transform = 'translateX(-6px)';
+  setTimeout(()=>{ card.style.transform='translateX(6px)'; },80);
+  setTimeout(()=>{ card.style.transform='translateX(-4px)'; },160);
+  setTimeout(()=>{ card.style.transform='translateX(4px)'; },240);
+  setTimeout(()=>{ card.style.transform='translateX(0)'; },320);
+}
+
+function hideError() {
+  document.getElementById('errorMsg').classList.remove('show');
+}
+
+function handleSignIn() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const btn      = document.getElementById('signinBtn');
+
+  hideError();
+
+  if (!username) { showError('Please enter your username.'); document.getElementById('username').focus(); return; }
+  if (!password) { showError('Please enter your password.'); document.getElementById('password').focus(); return; }
+
+  // Проверка пользователей из localStorage
+  const users = JSON.parse(localStorage.getItem('wofes_users') || '[]');
+  const user = users.find(u => u.name === username && u.password === password);
+
+  if (user) {
+    // Успешный вход
+    btn.classList.add('loading');
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      window.location.href = 'chat.html';
+    }, 1400);
+  } else {
+    showError('Incorrect username or password. Please try again.');
+  }
+}
+
+function handleForgot(e) {
+  e.preventDefault();
+  alert('Password reset functionality would go here.');
+}
+
+function handleSignUp(e) {
+  e.preventDefault();
+  window.location.href = 'register.html';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleSignIn();
+});
+</script>
+</body>
+</html>

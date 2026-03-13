@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOFES AI v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --deep: #03020a;
+    --void: #060412;
+    --nebula-1: rgba(88, 28, 180, 0.18);
+    --nebula-2: rgba(15, 52, 130, 0.22);
+    --nebula-3: rgba(120, 10, 100, 0.12);
+    --white: #ffffff;
+    --glow-white: rgba(255,255,255,0.85);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--deep);
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+
+  #cosmos {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .nebula {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 1;
+    animation: nebula-drift 22s ease-in-out infinite alternate;
+  }
+  .n1 { width: 600px; height: 500px; background: var(--nebula-1); top: -10%; left: -5%; animation-duration: 26s; }
+  .n2 { width: 700px; height: 600px; background: var(--nebula-2); bottom: -15%; right: -8%; animation-duration: 32s; animation-direction: alternate-reverse; }
+  .n3 { width: 400px; height: 350px; background: var(--nebula-3); top: 30%; left: 50%; transform: translateX(-50%); animation-duration: 18s; }
+
+  @keyframes nebula-drift {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(30px, -20px) scale(1.06); }
+    100% { transform: translate(-15px, 25px) scale(0.96); }
+  }
+
+  #stage {
+    position: relative;
+    z-index: 10;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .halo {
+    position: absolute;
+    width: 520px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(110,50,220,0.22) 0%, transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+    animation: halo-pulse 5s ease-in-out infinite alternate;
+  }
+  @keyframes halo-pulse {
+    from { opacity: 0.6; transform: scale(1); }
+    to   { opacity: 1;   transform: scale(1.12); }
+  }
+
+  .badge {
+    letter-spacing: 0.28em;
+    font-size: 0.68rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    color: rgba(255,255,255,0.38);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    animation: fade-up 1s 0.2s both;
+  }
+
+  .title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(3.2rem, 10vw, 8.5rem);
+    color: var(--white);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    text-shadow:
+      0 0 60px rgba(160,100,255,0.5),
+      0 0 120px rgba(80,50,200,0.3);
+    animation: fade-up 1s 0.4s both;
+  }
+
+  .title span {
+    background: linear-gradient(135deg, #ffffff 30%, #c4a8ff 70%, #8b6fef 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .divider {
+    width: 48px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    margin: 28px auto 32px;
+    animation: fade-up 1s 0.6s both;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fade-up 1s 0.8s both;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 14px 30px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s ease, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.18) 0%, transparent 70%);
+  }
+  .btn:hover::after { opacity: 1; }
+
+  .btn-primary {
+    background: #ffffff;
+    color: #0a0a14;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 0 28px rgba(255,255,255,0.5), 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .arrow-icon {
+    display: inline-block;
+    transition: transform 0.2s;
+  }
+  .btn-primary:hover .arrow-icon { transform: translateX(3px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: rgba(255,255,255,0.88);
+    border: 1px solid rgba(255,255,255,0.28);
+    backdrop-filter: blur(6px);
+  }
+  .btn-secondary:hover {
+    transform: translateY(-2px) scale(1.03);
+    border-color: rgba(255,255,255,0.7);
+    color: #fff;
+    box-shadow: 0 0 22px rgba(140,100,255,0.35), 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .btn-secondary:active { transform: scale(0.98); }
+
+  .tg-icon { width: 17px; height: 17px; opacity: 0.85; flex-shrink: 0; }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 480px) {
+    .buttons { flex-direction: column; width: 100%; padding: 0 24px; }
+    .btn { justify-content: center; width: 100%; }
+    .halo { width: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="cosmos"></canvas>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="nebula n3"></div>
+
+<div id="stage">
+  <div class="halo"></div>
+  <p class="badge">Artificial Intelligence &nbsp;·&nbsp; Version 2</p>
+  <h1 class="title"><span>WOFES AI v2</span></h1>
+  <div class="divider"></div>
+  <div class="buttons">
+    <button class="btn btn-primary" onclick="window.location.href='login.html'">
+      START
+      <span class="arrow-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#0a0a14" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+    <button class="btn btn-secondary" onclick="window.open('https://t.me/WFStudio_News', '_blank')">
+      <svg class="tg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21.8 3.2L2.2 10.8c-1.3.5-1.3 1.3-.2 1.6l4.9 1.5 1.9 5.7c.2.7.4.9 1 .9.4 0 .6-.2 1-.5l2.4-2.3 5 3.7c.9.5 1.6.2 1.8-.8L22.9 4.4c.3-1.3-.5-1.8-1.1-1.2z" fill="currentColor"/>
+      </svg>
+      TELEGRAM CHANNEL
+    </button>
+  </div>
+</div>
+
+<script>
+// Star field (такой же как в оригинале)
+const canvas = document.getElementById('cosmos');
+const ctx = canvas.getContext('2d');
+let W, H, stars = [], shooters = [];
+const STAR_COUNT = 280;
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+function rand(a,b) { return a + Math.random()*(b-a); }
+
+function mkStar() {
+  return {
+    x: Math.random()*W, y: Math.random()*H,
+    r: rand(0.3,1.6), baseAlpha: rand(0.2,0.9), alpha:0,
+    twinkleSpeed: rand(0.004,0.018), twinklePhase: Math.random()*Math.PI*2,
+    driftX: rand(-0.012,0.012), driftY: rand(-0.006,0.006),
+    hue: Math.random()<0.15?260:(Math.random()<0.1?200:0),
+    sat: Math.random()<0.2?80:0,
+  };
+}
+function initStars() { stars = Array.from({length:STAR_COUNT}, mkStar); }
+
+function mkShooter() {
+  const angle = rand(15,45)*Math.PI/180;
+  return {
+    x: rand(0,W*0.8), y: rand(0,H*0.4),
+    len: rand(80,200), speed: rand(6,14), angle, life:1,
+    decay: rand(0.012,0.025), active:true,
+  };
+}
+
+let shooterTimer = 0;
+function maybeShoot(dt) {
+  shooterTimer += dt;
+  if (shooterTimer > rand(2500,5500)) { shooters.push(mkShooter()); shooterTimer = 0; }
+  shooters = shooters.filter(s => s.active);
+}
+
+let last = 0;
+function draw(ts) {
+  const dt = ts - last; last = ts;
+  ctx.clearRect(0,0,W,H);
+
+  const bg = ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,Math.max(W,H)*.75);
+  bg.addColorStop(0,'#0b0620'); bg.addColorStop(.5,'#060412'); bg.addColorStop(1,'#03020a');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  for (const s of stars) {
+    s.twinklePhase += s.twinkleSpeed;
+    s.alpha = s.baseAlpha*(0.5 + 0.5*Math.sin(s.twinklePhase));
+    s.x += s.driftX; s.y += s.driftY;
+    if (s.x<-2) s.x=W+2; if (s.x>W+2) s.x=-2; if (s.y<-2) s.y=H+2; if (s.y>H+2) s.y=-2;
+
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle = s.sat>0 ? `hsla(${s.hue},${s.sat}%,85%,${s.alpha})` : `rgba(255,255,255,${s.alpha})`;
+    ctx.fill();
+
+    if (s.r>1.1) {
+      const grd = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+      grd.addColorStop(0,`rgba(200,180,255,${s.alpha*.3})`); grd.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r*5,0,Math.PI*2); ctx.fillStyle=grd; ctx.fill();
+    }
+  }
+
+  maybeShoot(dt);
+  for (const s of shooters) {
+    const ex = s.x + Math.cos(s.angle)*s.len*s.life;
+    const ey = s.y + Math.sin(s.angle)*s.len*s.life;
+    const grad = ctx.createLinearGradient(s.x,s.y,ex,ey);
+    grad.addColorStop(0,`rgba(255,255,255,0)`);
+    grad.addColorStop(.7,`rgba(255,255,255,${s.life*.6})`);
+    grad.addColorStop(1,`rgba(255,255,255,${s.life})`);
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(ex,ey);
+    ctx.strokeStyle=grad; ctx.lineWidth=1.5; ctx.stroke();
+    s.x += Math.cos(s.angle)*s.speed; s.y += Math.sin(s.angle)*s.speed;
+    s.life -= s.decay; if(s.life<=0) s.active=false;
+  }
+
+  requestAnimationFrame(draw);
+}
+
+resize(); initStars();
+window.addEventListener('resize', () => { resize(); initStars(); });
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
