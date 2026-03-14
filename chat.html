@@ -154,9 +154,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--deep);font-fam
 
   <div id="body">
     <div id="chat-area">
-      <div id="messages">
-        <!-- Пусто - никаких приветствий -->
-      </div>
+      <div id="messages"></div>
 
       <div id="input-bar">
         <textarea id="msg-input" placeholder="Сообщение WOFES AI..." rows="1"
@@ -197,86 +195,197 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--deep);font-fam
 </div>
 
 <script>
-// ========== ВСЕ ТВОИ КЛЮЧИ ==========
-const API_KEYS = [
-  "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",
-  "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",
-  "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",
-  "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",
-  "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",
-  "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",
-  "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"
-];
+// ========== ТВОЙ КЛЮЧ SILICONFLOW ==========
+const SILICONFLOW_KEY = "sk-qgiiwqgsgvdnfbgurstxbapyqeulfugcdkwvwxuaxqechfsd";
+const SILICONFLOW_URL = "https://api.siliconflow.cn/v1/chat/completions";
+const SILICONFLOW_MODEL = "deepseek-ai/DeepSeek-V3";
 
-// ========== РАБОЧИЕ БЕСПЛАТНЫЕ МОДЕЛИ ==========
-const MODELS = [
-  "google/gemini-2.0-flash-exp:free",
-  "google/gemini-2.0-flash-thinking-exp:free",
-  "z-ai/glm-4.5-air:free",
-  "qwen/qwen-2.5-72b-instruct:free"
-];
+// ========== ФУНКЦИЯ ДЛЯ ЗАПРОСА ==========
+async function fetchAIResponse(history) {
+  try {
+    console.log(`🔄 Trying SiliconFlow...`);
+    const response = await fetch(SILICONFLOW_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SILICONFLOW_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: SILICONFLOW_MODEL,
+        messages: history
+      })
+    });
 
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+    if (response.ok) {
+      const data = await response.json();
+      if (data.choices && data.choices[0]) {
+        console.log(`✅ SiliconFlow success`);
+        return data;
+      }
+    }
+    throw new Error('SiliconFlow failed');
+  } catch (error) {
+    console.log(`❌ SiliconFlow error: ${error.message}`);
+    throw error;
+  }
+}
 
-// ========== ПЕРЕМЕННЫЕ ЧАТА ==========
-let chats = [{
-  id: 'main',
-  name: 'Основной чат',
-  messages: [],
-  preview: ''
-}];
-let currentChatId = 'main';
-let messageHistory = [];
+// ========== ОТПРАВКА СООБЩЕНИЯ ==========
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Проверка лимитов (3 запроса в час)
+  const userId = localStorage.getItem('wofes_user') || 'guest';
+  const limits = JSON.parse(localStorage.getItem('wofes_limits') || '{}');
+  const now = Date.now();
+  
+  const isEnglish = /^[a-zA-Z\s\d.,!?]+$/.test(text);
+  const limitMessage = isEnglish 
+    ? "You've used all 3 requests for this hour. Try again in an hour."
+    : "Ваши 3 запроса на этот час исчерпаны. Попробуйте через час.";
+  
+  if (!limits[userId] || now > limits[userId].resetTime) {
+    limits[userId] = { count: 1, resetTime: now + 60 * 60 * 1000 };
+  } else if (limits[userId].count >= 3) {
+    addMessageToUI('ai', limitMessage);
+    input.value = '';
+    return;
+  } else {
+    limits[userId].count++;
+  }
+  localStorage.setItem('wofes_limits', JSON.stringify(limits));
+
+  const currentChat = chats.find(c => c.id === currentChatId);
+  if (!currentChat) return;
+
+  currentChat.messages.push({ role: 'user', content: text });
+  addMessageToUI('user', text);
+  currentChat.preview = text.substring(0, 30);
+  renderChatList();
+  input.value = '';
+  autoResize(input);
+
+  showTyping();
+
+  try {
+    const history = currentChat.messages.slice(-10).map(m => ({
+      role: m.role,
+      content: m.content
+    }));
+
+    const data = await fetchAIResponse(history);
+    hideTyping();
+    
+    const reply = data.choices[0].message.content;
+    currentChat.messages.push({ role: 'assistant', content: reply });
+    addMessageToUI('ai', reply);
+
+  } catch (error) {
+    hideTyping();
+    addMessageToUI('ai', '❌ Ошибка: не удалось получить ответ. Попробуйте ещё раз.');
+    console.error('API error:', error);
+  }
+}
 
 // ========== ЗВЁЗДНОЕ НЕБО ==========
-const canvas=document.getElementById('cosmos'),ctx=canvas.getContext('2d');
-let W,H,stars=[],shooters=[];
-const STAR_COUNT=280;
-function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
-const rand=(a,b)=>a+Math.random()*(b-a);
-function mkStar(){return{x:Math.random()*W,y:Math.random()*H,r:rand(0.3,1.6),baseAlpha:rand(0.2,0.9),alpha:0,twinkleSpeed:rand(0.004,0.018),twinklePhase:Math.random()*Math.PI*2,driftX:rand(-0.012,0.012),driftY:rand(-0.006,0.006),hue:Math.random()<0.15?260:(Math.random()<0.1?200:0),sat:Math.random()<0.2?80:0}}
-function initStars(){stars=Array.from({length:STAR_COUNT},mkStar)}
-function mkShooter(){return{x:rand(0,W*0.8),y:rand(0,H*0.4),len:rand(80,200),speed:rand(6,14),angle:rand(15,45)*Math.PI/180,life:1,decay:rand(0.012,0.025),active:true}}
-let shooterTimer=0;
-function maybeShoot(dt){shooterTimer+=dt;if(shooterTimer>rand(2500,5500)){shooters.push(mkShooter());shooterTimer=0}shooters=shooters.filter(s=>s.active)}
-let lastTs=0;
-function draw(ts){
-  const dt=ts-lastTs;lastTs=ts;
+const canvas = document.getElementById('cosmos');
+const ctx = canvas.getContext('2d');
+let W, H, stars = [], shooters = [];
+const STAR_COUNT = 280;
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+const rand = (a,b) => a + Math.random()*(b-a);
+
+function mkStar() {
+  return {
+    x: Math.random()*W, y: Math.random()*H,
+    r: rand(0.3,1.6), baseAlpha: rand(0.2,0.9), alpha:0,
+    twinkleSpeed: rand(0.004,0.018), twinklePhase: Math.random()*Math.PI*2,
+    driftX: rand(-0.012,0.012), driftY: rand(-0.006,0.006),
+    hue: Math.random()<0.15?260:(Math.random()<0.1?200:0),
+    sat: Math.random()<0.2?80:0
+  };
+}
+function initStars() { stars = Array.from({length:STAR_COUNT}, mkStar); }
+
+function mkShooter() {
+  return {
+    x: rand(0,W*0.8), y: rand(0,H*0.4),
+    len: rand(80,200), speed: rand(6,14), angle: rand(15,45)*Math.PI/180,
+    life:1, decay: rand(0.012,0.025), active:true
+  };
+}
+
+let shooterTimer = 0;
+function maybeShoot(dt) {
+  shooterTimer += dt;
+  if (shooterTimer > rand(2500,5500)) {
+    shooters.push(mkShooter());
+    shooterTimer = 0;
+  }
+  shooters = shooters.filter(s => s.active);
+}
+
+let lastTs = 0;
+function draw(ts) {
+  const dt = ts - lastTs; lastTs = ts;
   ctx.clearRect(0,0,W,H);
-  const bg=ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,Math.max(W,H)*.75);
-  bg.addColorStop(0,'#0b0620');bg.addColorStop(.5,'#060412');bg.addColorStop(1,'#03020a');
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  for(const s of stars){
-    s.twinklePhase+=s.twinkleSpeed;
-    s.alpha=s.baseAlpha*(0.5+0.5*Math.sin(s.twinklePhase));
-    s.x+=s.driftX;s.y+=s.driftY;
-    if(s.x<-2)s.x=W+2;if(s.x>W+2)s.x=-2;if(s.y<-2)s.y=H+2;if(s.y>H+2)s.y=-2;
-    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fillStyle=s.sat>0?`hsla(${s.hue},${s.sat}%,85%,${s.alpha})`:`rgba(255,255,255,${s.alpha})`;
+
+  const bg = ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,Math.max(W,H)*.75);
+  bg.addColorStop(0,'#0b0620'); bg.addColorStop(.5,'#060412'); bg.addColorStop(1,'#03020a');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  for (const s of stars) {
+    s.twinklePhase += s.twinkleSpeed;
+    s.alpha = s.baseAlpha*(0.5+0.5*Math.sin(s.twinklePhase));
+    s.x += s.driftX; s.y += s.driftY;
+    if (s.x<-2) s.x=W+2; if (s.x>W+2) s.x=-2; if (s.y<-2) s.y=H+2; if (s.y>H+2) s.y=-2;
+    
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle = s.sat>0 ? `hsla(${s.hue},${s.sat}%,85%,${s.alpha})` : `rgba(255,255,255,${s.alpha})`;
     ctx.fill();
-    if(s.r>1.1){const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);g.addColorStop(0,`rgba(200,180,255,${s.alpha*.3})`);g.addColorStop(1,'transparent');ctx.beginPath();ctx.arc(s.x,s.y,s.r*5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}
+    
+    if (s.r>1.1) {
+      const g = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+      g.addColorStop(0,`rgba(200,180,255,${s.alpha*.3})`);
+      g.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r*5,0,Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+    }
   }
+
   maybeShoot(dt);
-  for(const s of shooters){
-    const ex=s.x+Math.cos(s.angle)*s.len*s.life,ey=s.y+Math.sin(s.angle)*s.len*s.life;
-    const g=ctx.createLinearGradient(s.x,s.y,ex,ey);
-    g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(.7,`rgba(255,255,255,${s.life*.6})`);g.addColorStop(1,`rgba(255,255,255,${s.life})`);
-    ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(ex,ey);ctx.strokeStyle=g;ctx.lineWidth=1.5;ctx.stroke();
-    s.x+=Math.cos(s.angle)*s.speed;s.y+=Math.sin(s.angle)*s.speed;s.life-=s.decay;if(s.life<=0)s.active=false;
+  for (const s of shooters) {
+    const ex = s.x + Math.cos(s.angle)*s.len*s.life;
+    const ey = s.y + Math.sin(s.angle)*s.len*s.life;
+    const g = ctx.createLinearGradient(s.x,s.y,ex,ey);
+    g.addColorStop(0,'rgba(255,255,255,0)');
+    g.addColorStop(.7,`rgba(255,255,255,${s.life*.6})`);
+    g.addColorStop(1,`rgba(255,255,255,${s.life})`);
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(ex,ey);
+    ctx.strokeStyle=g; ctx.lineWidth=1.5; ctx.stroke();
+    s.x += Math.cos(s.angle)*s.speed;
+    s.y += Math.sin(s.angle)*s.speed;
+    s.life -= s.decay;
+    if (s.life <= 0) s.active = false;
   }
+  
   requestAnimationFrame(draw);
 }
-resize();initStars();
-window.addEventListener('resize',()=>{resize();initStars()});
+
+resize(); initStars();
+window.addEventListener('resize', () => { resize(); initStars(); });
 requestAnimationFrame(draw);
 
 // ========== ФУНКЦИИ ЧАТА ==========
-function getNow(){
+function getNow() {
   const d = new Date();
-  return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 }
 
-function escapeHtml(s){
+function escapeHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
 
@@ -308,116 +417,30 @@ function showTyping() {
 
 function hideTyping() {
   const t = document.getElementById('typing-indicator');
-  if(t) t.remove();
+  if (t) t.remove();
 }
 
-function autoResize(el){
-  el.style.height='auto';
-  el.style.height=Math.min(el.scrollHeight,140)+'px';
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
 }
 
-function handleKey(e){
-  if(e.key==='Enter' && !e.shiftKey){
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     sendMessage();
   }
 }
 
-// ========== ФУНКЦИЯ ДЛЯ ПЕРЕБОРА КЛЮЧЕЙ И МОДЕЛЕЙ ==========
-async function fetchWithRetry(history, maxRetries = 3) {
-  let lastError = null;
-  
-  for (let keyIndex = 0; keyIndex < API_KEYS.length; keyIndex++) {
-    const currentKey = API_KEYS[keyIndex];
-    
-    for (let modelIndex = 0; modelIndex < MODELS.length; modelIndex++) {
-      const currentModel = MODELS[modelIndex];
-      
-      try {
-        console.log(`Trying key ${keyIndex + 1}, model ${currentModel}`);
-        
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${currentKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://wofes-ai.local',
-            'X-Title': 'WOFES AI v2'
-          },
-          body: JSON.stringify({
-            model: currentModel,
-            messages: history
-          })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.log(`Failed with model ${currentModel}:`, errorText);
-          lastError = new Error(`HTTP ${response.status}: ${errorText}`);
-          continue;
-        }
-
-        const data = await response.json();
-        if (data.choices && data.choices[0]) {
-          console.log(`✅ Success with key ${keyIndex + 1}, model ${currentModel}`);
-          return data;
-        }
-      } catch (error) {
-        console.log(`Error with model ${currentModel}:`, error.message);
-        lastError = error;
-      }
-    }
-    console.log(`Key ${keyIndex + 1} exhausted all models, trying next key...`);
-  }
-  
-  throw lastError || new Error('All keys and models failed');
-}
-
-// ========== ОТПРАВКА СООБЩЕНИЯ ==========
-async function sendMessage() {
-  const input = document.getElementById('msg-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  const currentChat = chats.find(c => c.id === currentChatId);
-  if (!currentChat) return;
-
-  // Добавляем сообщение пользователя
-  currentChat.messages.push({ role: 'user', content: text });
-  addMessageToUI('user', text);
-  
-  // Обновляем превью в списке чатов
-  currentChat.preview = text.substring(0, 30);
-  renderChatList();
-  
-  input.value = '';
-  autoResize(input);
-
-  showTyping();
-
-  try {
-    // Формируем историю для API (последние 10 сообщений)
-    const history = currentChat.messages.slice(-10).map(m => ({
-      role: m.role,
-      content: m.content
-    }));
-
-    const data = await fetchWithRetry(history);
-    
-    hideTyping();
-    
-    const reply = data.choices[0].message.content;
-    currentChat.messages.push({ role: 'assistant', content: reply });
-    addMessageToUI('ai', reply);
-
-  } catch (error) {
-    hideTyping();
-    addMessageToUI('ai', '❌ Ошибка: не удалось получить ответ. Попробуйте ещё раз.');
-    console.error('API error:', error);
-  }
-}
-
 // ========== УПРАВЛЕНИЕ ЧАТАМИ ==========
+let chats = [{
+  id: 'main',
+  name: 'Основной чат',
+  messages: [],
+  preview: ''
+}];
+let currentChatId = 'main';
+
 function renderChatList() {
   const list = document.getElementById('chat-list');
   list.innerHTML = '';
@@ -445,7 +468,6 @@ function selectChat(chatId) {
   
   currentChatId = chatId;
   
-  // Очищаем и перезагружаем сообщения
   const container = document.getElementById('messages');
   container.innerHTML = '';
   
@@ -485,7 +507,6 @@ function logout() {
   window.location.href = 'login.html';
 }
 
-// Закрытие сайдбара при клике вне
 document.addEventListener('click', e => {
   if (window.innerWidth > 768) return;
   const sb = document.getElementById('sidebar');
@@ -495,8 +516,7 @@ document.addEventListener('click', e => {
   }
 });
 
-// Инициализация
 renderChatList();
 </script>
 </body>
-</html>
+  </html>
