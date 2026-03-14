@@ -195,39 +195,56 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--deep);font-fam
 </div>
 
 <script>
-// ========== ТВОЙ КЛЮЧ SILICONFLOW ==========
-const SILICONFLOW_KEY = "sk-qgiiwqgsgvdnfbgurstxbapyqeulfugcdkwvwxuaxqechfsd";
-const SILICONFLOW_URL = "https://api.siliconflow.cn/v1/chat/completions";
-const SILICONFLOW_MODEL = "deepseek-ai/DeepSeek-V3";
+// ========== ТВОИ КЛЮЧИ OPENROUTER ==========
+const OPENROUTER_KEYS = [
+  "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",
+  "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",
+  "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",
+  "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",
+  "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",
+  "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",
+  "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",
+  "sk-or-v1-b1d8f7a2e3c4d5e6f7a8b9c0d1e2f3g4h5i6j7k8l9m0n1o2p3q4r5s6t7u8v9w0"
+];
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+// Используем специальный роутер для бесплатных моделей
+const OPENROUTER_MODEL = "openrouter/free";
 
 // ========== ФУНКЦИЯ ДЛЯ ЗАПРОСА ==========
 async function fetchAIResponse(history) {
-  try {
-    console.log(`🔄 Trying SiliconFlow...`);
-    const response = await fetch(SILICONFLOW_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SILICONFLOW_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: SILICONFLOW_MODEL,
-        messages: history
-      })
-    });
+  for (let i = 0; i < OPENROUTER_KEYS.length; i++) {
+    const key = OPENROUTER_KEYS[i];
+    try {
+      console.log(`🔄 Trying OpenRouter key ${i + 1}/${OPENROUTER_KEYS.length}...`);
+      
+      const response = await fetch(OPENROUTER_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://wofes-ai.local',
+          'X-Title': 'WOFES AI v2'
+        },
+        body: JSON.stringify({
+          model: OPENROUTER_MODEL,
+          messages: history
+        })
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      if (data.choices && data.choices[0]) {
-        console.log(`✅ SiliconFlow success`);
-        return data;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.choices && data.choices[0]) {
+          console.log(`✅ OpenRouter key ${i + 1} success`);
+          return data;
+        }
       }
+      console.log(`❌ Key ${i + 1} failed`);
+      
+    } catch (error) {
+      console.log(`❌ Key ${i + 1} error: ${error.message}`);
     }
-    throw new Error('SiliconFlow failed');
-  } catch (error) {
-    console.log(`❌ SiliconFlow error: ${error.message}`);
-    throw error;
   }
+  throw new Error('All OpenRouter keys failed');
 }
 
 // ========== ОТПРАВКА СООБЩЕНИЯ ==========
@@ -519,4 +536,4 @@ document.addEventListener('click', e => {
 renderChatList();
 </script>
 </body>
-  </html>
+          </html>
